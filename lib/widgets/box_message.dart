@@ -16,7 +16,8 @@ class BoxMessage extends StatelessWidget {
         children: <Widget>[
           Container(
             margin: EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
+            child: CircleAvatar(         
+              backgroundColor: Colors.black,
               backgroundImage: NetworkImage("https://www.ibm.com/watson/assets/duo/img/common/avatar_purple.png"),
             ),
           ),
