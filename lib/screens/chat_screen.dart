@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:watson_assistant/watson_assistant.dart';
 import 'package:watson_assistant_app/util/constants.dart';
+import 'package:watson_assistant_app/widgets/box_message.dart';
 
 class ChatScreen extends StatefulWidget {
   ChatScreen({Key key, this.title}) : super(key: key);
@@ -24,6 +25,7 @@ class _ChatScreenState extends State<ChatScreen> {
       WatsonAssistantContext(context: {});
 
   final myController = TextEditingController();
+  bool _isComposing = false;
 
   void _callWatsonAssistant() async {
     watsonAssistantResponse = await watsonAssistant.sendMessage(
@@ -32,7 +34,8 @@ class _ChatScreenState extends State<ChatScreen> {
       _text = watsonAssistantResponse.resultText;
     });
     watsonAssistantContext = watsonAssistantResponse.context;
-    myController.clear();
+    _clear();
+    _isComposing = false;
   }
 
   @override
@@ -67,40 +70,24 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         body: Column(
           children: <Widget>[
-            // Expanded(
-            //   child: ListView(
-            //     children: <Widget>[
-            //       BoxMessage(),
-            //       BoxMessage(),
-            //       BoxMessage(),
-            //     ],
-            //   ),
-            // ),
-            // Divider(height: 1.0,),
-            // Container(
-            //   decoration: BoxDecoration(color: Colors.white),
-            //   child: TextComposer(),
-            // )
-
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+            Expanded(
+              child: ListView(
+                reverse: true,
                 children: <Widget>[
-                  TextField(
-                    controller: myController,
-                  ),
-                  Text(
-                    _text != null ? '$_text' : 'Resposta do Watson',
-                    style: Theme.of(context).textTheme.display1,
+                  BoxMessage(
+                    _text != null ? '$_text' : '...',
                   ),
                 ],
               ),
             ),
+            Divider(
+              height: 1.0,
+            ),
+            Container(
+              decoration: BoxDecoration(color: Colors.white),
+              child: _textComposer(),              
+            ),
           ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: _callWatsonAssistant,
-          child: Icon(Icons.send),
         ),
       ),
     );
@@ -111,6 +98,56 @@ class _ChatScreenState extends State<ChatScreen> {
     myController.dispose();
     super.dispose();
   }
+
+  void _clear() {
+    myController.clear();
+    setState(() {
+      _isComposing = false;
+    });
+  }
+
+  Widget _textComposer() {
+    return IconTheme(
+      data: IconThemeData(color: Theme.of(context).accentColor),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: Row(
+          children: <Widget>[
+            Container(
+              child: IconButton(
+                icon: Icon(Icons.photo_camera),
+                onPressed: () {},
+              ),
+            ),
+            Expanded(
+              child: TextField(
+                controller: myController,
+                decoration:
+                    InputDecoration.collapsed(hintText: "Digite a mensagem"),
+                onChanged: (text) {
+                  setState(() {
+                    _isComposing = text.length > 0;
+                  });
+                },
+                onSubmitted: (text){
+                  _callWatsonAssistant;
+                  _clear();
+                },
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 4.0),
+              child: IconButton(
+                icon: Icon(Icons.send),
+                onPressed: _isComposing ? _callWatsonAssistant : null,
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
 }
 
 class TextComposer extends StatefulWidget {
@@ -119,7 +156,15 @@ class TextComposer extends StatefulWidget {
 }
 
 class _TextComposerState extends State<TextComposer> {
+  final _controller =TextEditingController();
   bool _isComposing = false;
+
+  void _clear(){
+    _controller.clear();
+    setState(() {
+      _isComposing = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -137,6 +182,7 @@ class _TextComposerState extends State<TextComposer> {
             ),
             Expanded(
               child: TextField(
+                controller: _controller,
                 decoration:
                     InputDecoration.collapsed(hintText: "Digite a mensagem"),
                 onChanged: (text) {
@@ -144,13 +190,20 @@ class _TextComposerState extends State<TextComposer> {
                     _isComposing = text.length > 0;
                   });
                 },
+                onSubmitted: (text){
+                  _sendMessage(_controller.text);
+                  _clear();
+                },
               ),
             ),
             Container(
               margin: EdgeInsets.symmetric(horizontal: 4.0),
               child: IconButton(
                 icon: Icon(Icons.send),
-                onPressed: _isComposing ? (){} :null,
+                onPressed: _isComposing ? (){
+                  _sendMessage(_controller.text);
+                  _clear();
+                } :null,
               ),
             )
           ],
@@ -160,36 +213,6 @@ class _TextComposerState extends State<TextComposer> {
   }
 }
 
-class BoxMessage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Container(
-            margin: EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              backgroundImage: NetworkImage("https://www.ibm.com/watson/assets/duo/img/common/avatar_purple.png"),
-            ),
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text("Stark",
-                style:Theme.of(context).textTheme.subhead,
-                ),
-                Container(
-                  margin: const EdgeInsets.only(top: 5.0),
-                  child: Text("teste"),
-                )
-              ],
-            ),
-          )
-        ],
-      ),
-    );
-  }
+void _sendMessage(String text){
+  print(text);
 }

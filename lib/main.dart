@@ -8,11 +8,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
+      title: 'Watson Assistant',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(        
         primarySwatch: Colors.blue,
       ),
-      home: ChatScreen(title: 'Flutter Demo Home Page'),
+      home: ChatScreen(title: 'Watson Assistant'),
     );
   }
 }
